@@ -16,6 +16,8 @@ jobs:
         java-version: 17
         cache: 'gradle'
         distribution: temurin
+    - name: Setup Android SDK Tools
+      uses: android-actions/setup-android@v3.2.1
     - name: Build mod jar
       run: ./gradlew --no-daemon deploy
     - name: Upload workflow artifact
