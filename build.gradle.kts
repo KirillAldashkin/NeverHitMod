@@ -53,12 +53,12 @@ tasks {
     }
 
     // Completes the 'mod.hjson' manifest with version and main class, then inserts it into output
-    val generateMetadata = register("generateMetadata") {
+    val manifest = register("manifest") {
         dependsOn(compileKotlin)
         // Need source manifest + compile output to find the main class
         inputs.files(compileKotlin.get().outputs.files + "${projectDir.absolutePath}/mod.hjson")
         // Final mod manifest
-        outputs.file("mod.hjson")
+        outputs.file("${temporaryDir.absolutePath}/mod.hjson")
         doLast {
             // Load source manifest
             val modFile = inputs.files.filter { it.name == "mod.hjson" }.singleFile
@@ -95,8 +95,8 @@ tasks {
 
     // Generates raw (see "optimize") jar package
     jar {
-        dependsOn(generateMetadata)
-        inputs.file(generateMetadata.get().outputs.files.singleFile)
+        dependsOn(manifest)
+        inputs.file(manifest.get().outputs.files.singleFile)
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
         archiveFileName = "${project.name}Raw.jar"
 
@@ -121,8 +121,8 @@ tasks {
     // Optimizes raw jar package, creating complete Desktop mod
     val optimize = register<ProGuardTask>("optimize") {
         dependsOn(jar)
-        dependsOn(generateMetadata)
-        inputs.file(generateMetadata.get().outputs.files.singleFile)
+        dependsOn(manifest)
+        inputs.file(manifest.get().outputs.files.singleFile)
         injars(jar.get().outputs.files)
         libraryjars(
             mapOf(
@@ -172,9 +172,10 @@ tasks {
                 "--min-api", "14",
                 "--output", outputs.files.singleFile.absolutePath,
                 inputs.files.singleFile.absolutePath)
-            ProcessBuilder(args)
+            val exit = ProcessBuilder(args)
                 .start()
                 .waitFor()
+            if (exit != 0) throw GradleException("'d8' failed with code $exit")
 
             println("Built Android JAR at: ${outputs.files.singleFile.absolutePath}")
         }
@@ -183,10 +184,12 @@ tasks {
     // Prepares and runs an isolated Mindustry installation
     val run = register<JavaExec>("run") {
         dependsOn(optimize)
+        dependsOn(manifest)
         inputs.file(optimize.get().outputs.files.singleFile)
+        inputs.file(manifest.get().outputs.files.singleFile)
         doFirst {
             // Load manifest to get the game's version
-            var infoFile = generateMetadata.get().outputs.files.singleFile
+            var infoFile = manifest.get().outputs.files.singleFile
             var modInfo = JsonValue.readHjson(infoFile.reader()).asObject()
 
             // Download game unless it already is
@@ -201,7 +204,7 @@ tasks {
             // Copy mod to game installation
             val dataDirPath = "${temporaryDir.absolutePath}/datadir"
             copy {
-                from(inputs.files.singleFile)
+                from(optimize.get().outputs.files.singleFile)
                 into("${dataDirPath}/mods")
             }
 

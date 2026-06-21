@@ -1,13 +1,6 @@
-{
-  displayName: Never Hit Challenge
-  name: neverhit-challenge-mod
-  author: nukleer
-  description: Instantly lose when 'Sharded' take any damage
-  minGameVersion: 158.1
-  dependencies:
-  [
-    kotlin-runtime
-  ]
-  main: nukleer.mindustry.neverhit.NeverHitMod
-  version: local-2026-06-21T22:14:07.2959107
-}
+displayName: Never Hit Challenge
+name: neverhit-challenge-mod
+author: nukleer
+description: Instantly lose when 'Sharded' take any damage
+minGameVersion: 158.1
+dependencies: [ "kotlin-runtime" ]
