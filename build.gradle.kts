@@ -146,8 +146,8 @@ tasks {
 
         doLast {
             val sdkRoot = arrayOf("ANDROID_HOME", "ANDROID_SDK_ROOT")
-                .filter { File(it).exists() }
-                .firstNotNullOfOrNull { System.getenv(it) }
+                .mapNotNull { System.getenv(it) }
+                .firstOrNull { File(it).exists() }
                 ?: throw GradleException("No valid Android SDK found")
 
             val platformRoot = File("$sdkRoot/platforms/").listFiles()
