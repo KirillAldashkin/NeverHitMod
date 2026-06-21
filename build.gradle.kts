@@ -172,11 +172,13 @@ tasks {
                 "--min-api", "14",
                 "--output", outputs.files.singleFile.absolutePath,
                 inputs.files.singleFile.absolutePath)
-            val exit = ProcessBuilder(args)
-                .redirectOutput(ProcessBuilder.Redirect.INHERIT)
-                .redirectError(ProcessBuilder.Redirect.INHERIT)
+            val d8 = ProcessBuilder(args)
+                .redirectOutput(ProcessBuilder.Redirect.PIPE)
+                .redirectError(ProcessBuilder.Redirect.PIPE)
                 .start()
-                .waitFor()
+            d8.errorStream.copyTo(System.err)
+            d8.inputStream.copyTo(System.out)
+            var exit = d8.waitFor()
             if (exit != 0) throw GradleException("'d8' failed with code $exit")
 
             println("Built Android JAR at: ${outputs.files.singleFile.absolutePath}")
