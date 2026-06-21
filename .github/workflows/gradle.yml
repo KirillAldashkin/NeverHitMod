@@ -7,9 +7,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Set up PATH
-      run: |
-        echo "${ANDROID_HOME}/build-tools/34.0.0" >> $GITHUB_PATH
     - name: Set up JDK
       uses: actions/setup-java@v4.0.0
       with:
@@ -18,6 +15,12 @@ jobs:
         distribution: temurin
     - name: Setup Android SDK Tools
       uses: android-actions/setup-android@v3.2.1
+      with:
+        log-accepted-android-sdk-licenses: false
+        packages: build-tools
+    - name: Set up PATH
+      run: |
+        echo "${ANDROID_HOME}/build-tools/34.0.0" >> $GITHUB_PATH
     - name: Build mod jar
       run: ./gradlew --no-daemon deploy
     - name: Upload workflow artifact
