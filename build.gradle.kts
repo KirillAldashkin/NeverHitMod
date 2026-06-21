@@ -173,6 +173,8 @@ tasks {
                 "--output", outputs.files.singleFile.absolutePath,
                 inputs.files.singleFile.absolutePath)
             val exit = ProcessBuilder(args)
+                .redirectOutput(ProcessBuilder.Redirect.INHERIT)
+                .redirectError(ProcessBuilder.Redirect.INHERIT)
                 .start()
                 .waitFor()
             if (exit != 0) throw GradleException("'d8' failed with code $exit")
