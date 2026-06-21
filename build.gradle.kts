@@ -164,14 +164,15 @@ tasks {
                 .findLast(File::exists)
                 ?: throw GradleException("No android.jar found")
 
-            val dependencies = (configurations.run { compileClasspath.get() + runtimeClasspath.get() + platformRoot })
-                .map { "-classpath ${it.absolutePath}" }
+            val dependencies = (configurations.run { compileClasspath.get() + runtimeClasspath.get() })
+                .flatMap { listOf("--classpath", it.absolutePath) }
                 .toTypedArray()
 
-            val args = listOf("d8", *dependencies,
+            val args = listOf("d8", inputs.files.singleFile.absolutePath,
+                "--lib", platformRoot.absolutePath,
                 "--min-api", "14",
                 "--output", outputs.files.singleFile.absolutePath,
-                inputs.files.singleFile.absolutePath)
+                *dependencies)
             val d8 = ProcessBuilder(args)
                 .redirectOutput(ProcessBuilder.Redirect.PIPE)
                 .redirectError(ProcessBuilder.Redirect.PIPE)
