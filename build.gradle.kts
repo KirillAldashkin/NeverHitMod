@@ -89,6 +89,7 @@ tasks {
             println("Mod version is: ${modData["version"]}")
             // Complete manifest
             outputs.files.singleFile.writeText(modData.toString(org.hjson.Stringify.HJSON))
+            println("Written metadata to: ${outputs.files.singleFile.absolutePath}")
         }
     }
 
@@ -111,6 +112,10 @@ tasks {
         from(inputs.files.filter { it.name == "mod.hjson" }.singleFile)
         // Media assets
         from("assets").include("**")
+
+        doLast {
+            println("Built JAR at: ${outputs.files.singleFile.absolutePath}")
+        }
     }
 
     // Optimizes raw jar package, creating complete Desktop mod
@@ -135,6 +140,9 @@ tasks {
             var modInfo = JsonValue.readHjson(infoFile.reader()).asObject()
             keepclasseswithmembers("public class ${modInfo["main"]}")
             dontwarn()
+        }
+        doLast {
+            println("Optimized JAR at: ${outputs.files.singleFile.absolutePath}")
         }
     }
 
@@ -167,6 +175,8 @@ tasks {
             ProcessBuilder(args)
                 .start()
                 .waitFor()
+
+            println("Built Android JAR at: ${outputs.files.singleFile.absolutePath}")
         }
     }
 
