@@ -165,7 +165,7 @@ tasks {
                 ?: throw GradleException("No android.jar found")
 
             val dependencies = (configurations.run { compileClasspath.get() + runtimeClasspath.get() + platformRoot })
-                .map { "--classpath ${it.absolutePath}" }
+                .map { "-classpath ${it.absolutePath}" }
                 .toTypedArray()
 
             val args = listOf("d8", *dependencies,
