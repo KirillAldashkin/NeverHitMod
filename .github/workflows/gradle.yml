@@ -1,0 +1,32 @@
+name: Build mod [Desktop+Android]
+on: [push]
+permissions:
+  contents: write
+jobs:
+  buildJar:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up PATH
+      run: |
+        echo "${ANDROID_HOME}/build-tools/34.0.0" >> $GITHUB_PATH
+    - name: Set up JDK
+      uses: actions/setup-java@v4.0.0
+      with:
+        java-version: 17
+        cache: 'gradle'
+        distribution: temurin
+    - name: Build mod jar
+      run: ./gradlew --no-daemon deploy
+    - name: Upload workflow artifact
+      uses: actions/upload-artifact@v7
+      with:
+        archive: false
+        name: ${{ github.event.repository.name }}
+        path: build/libs/${{ github.event.repository.name }}.jar
+    - name: Upload release asset
+      if: ${{ github.ref_type == 'tag' }}
+      uses: vesoft-inc/upload-assets@v1.0.0
+      with:
+        tag: ${{ github.ref_name }}
+        asset-path: build/libs/${{ github.event.repository.name }}.jar
